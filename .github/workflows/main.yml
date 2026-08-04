@@ -1,0 +1,6 @@
+Workflow_dispatch:
+     inputs:
+      mavenArgs:
+        description: 'Additional mvn command arguments: goals, plugins etc. The `deploy` is included.'
+        required: false
+        type: string
