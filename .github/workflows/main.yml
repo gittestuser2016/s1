@@ -68,7 +68,11 @@ jobs:
           echo "Maven Arguments: ${{ github.event.inputs.mavenArgs }}"
           echo "Branch: ${{ github.event.inputs.branch }}"
 
+      
       # Build application
+      - name: Build with Maven
+        run: |
+          mvn clean install ${{ github.event.inputs.mavenArgs }}
       - name: Build with Maven
         run: |
           mvn clean install ${{ github.event.inputs.mavenArgs }}
