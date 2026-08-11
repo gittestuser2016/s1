@@ -1,42 +1,74 @@
-# This is a basic workflow to help you get started with Actions
+
+
+
+# This workflow builds the application and can also be manually triggered
+# with Maven arguments, environment, and branch inputs.
 
 name: CI_versions2
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # Trigger on push to main
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+
+  # Trigger on pull request to main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
-
-
-Workflow_dispatch:
-     inputs:
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
       mavenArgs:
-        description: 'Additional mvn command arguments: goals, plugins etc. The `deploy` is included.'
+        description: 'Additional Maven command arguments, goals, plugins, etc.'
         required: false
+        default: ''
         type: string
-     environment:
-        description: 'QA/prepro/prod/dev.'
+
+      environment:
+        description: 'Deployment environment: dev / QA / preprod / prod'
         required: false
+        default: 'dev'
         type: string
-     Branch:
-        description: 'branch details.'
+
+      branch:
+        description: 'Branch to build/deploy'
         required: false
+        default: 'main'
         type: string
+
 jobs:
-  # This workflow contains a single job called "build"
+
+  # Build job
   build:
-    # The type of runner that the job will run on
+    name: Build Java Application
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: mvn clean install
+      # Checkout source code
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
+
+      # Set up Java
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      # Display selected inputs
+      - name: Display workflow inputs
+        run: |
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Maven Arguments: ${{ github.event.inputs.mavenArgs }}"
+          echo "Branch: ${{ github.event.inputs.branch }}"
+
+      # Build application
+      - name: Build with Maven
+        run: |
+          mvn clean install ${{ github.event.inputs.mavenArgs }}
